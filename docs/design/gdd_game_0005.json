@@ -1,0 +1,74 @@
+{
+  "meta": {
+    "game_id": "game_0005",
+    "code_name": "MG-0005",
+    "title_kr": "로그라이크 퍼즐 던전",
+    "title_en": "Roguelike Puzzle Dungeon",
+    "version": "0.1.0",
+    "last_updated": "2025-01-01"
+  },
+  "overview": {
+    "genre_tags": ["puzzle", "roguelike", "turnbased"],
+    "target_audience": {
+      "age": "15-35",
+      "region": ["KR", "SEA"],
+      "play_style": "casual-hardcore"
+    },
+    "core_loop": "퍼즐을 풀어 던전을 탐험하고, 매 런마다 다른 경험을 한다",
+    "unique_selling_point": "턴제 퍼즐과 로그라이크의 조화"
+  },
+  "gameplay": {
+    "core_mechanics": [
+      {
+        "name": "턴제 퍼즐",
+        "description": "각 턴마다 퍼즐을 풀어 행동 결정"
+      },
+      {
+        "name": "로그라이크 진행",
+        "description": "무작위 생성 던전, 영구 죽음, 런 기반 진행"
+      },
+      {
+        "name": "스킬/아이템 수집",
+        "description": "런 중 스킬과 아이템을 획득하여 빌드 구성"
+      }
+    ],
+    "progression": {
+      "type": "run_based",
+      "description": "각 런마다 새로운 던전을 탐험하며 메타 진행"
+    },
+    "session_length": "10-20분"
+  },
+  "economy": {
+    "currencies": [
+      {
+        "name": "골드",
+        "type": "soft",
+        "sources": ["던전 클리어", "몬스터 처치", "보물 상자"],
+        "sinks": ["상점 구매", "업그레이드", "스킬 해금"]
+      },
+      {
+        "name": "영혼석",
+        "type": "meta",
+        "sources": ["런 종료 시", "업적"],
+        "sinks": ["메타 업그레이드", "캐릭터 해금"]
+      },
+      {
+        "name": "보석",
+        "type": "hard",
+        "sources": ["인앱 구매", "업적", "이벤트"],
+        "sinks": ["컨티뉴", "특별 아이템", "골드 구매"]
+      }
+    ],
+    "monetization": {
+      "model": "F2P + IAP",
+      "iap_items": ["보석 패키지", "스타터 팩", "캐릭터 팩"],
+      "ad_placements": ["보상형 광고 (컨티뉴, 보물 2배)", "인터스티셜 (런 종료 후)"]
+    }
+  },
+  "technical": {
+    "platform": ["Android", "iOS"],
+    "engine": "Flutter + Flame",
+    "backend": "Firebase",
+    "analytics": "GA4 + BigQuery"
+  }
+}
