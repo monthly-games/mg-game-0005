@@ -1,7 +1,13 @@
-# 로그라이크 퍼즐 던전 - BM 설계 문서
+﻿# 로그라이크 퍼즐 던전 - BM 설계 문서
 
 > game_id: game_0005
 > repo: mg-game-0005
+> title_kr: 로그라이크 퍼즐 던전
+> title_en: Roguelike Puzzle Dungeon
+> genre_tags: puzzle, roguelike, turnbased
+> doc_type: bm_design
+> source_of_truth: docs/design/gdd_game_0005.json
+> last_updated: 2025-12-19
 
 ---
 
