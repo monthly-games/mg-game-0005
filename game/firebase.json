@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"android":{"default":{"projectId":"mg-games-dev","appId":"1:701294998464:android:1b743c5b32db691301ce25","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"mg-games-dev","configurations":{"android":"1:701294998464:android:1b743c5b32db691301ce25","ios":"1:701294998464:ios:78cb1e32f878fd1401ce25"}}}}}}
