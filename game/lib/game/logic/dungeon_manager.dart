@@ -41,6 +41,7 @@ class DungeonManager extends ChangeNotifier {
   final _eventController = StreamController<GameEvent>.broadcast();
   Stream<GameEvent> get eventStream => _eventController.stream;
 
+  @override
   void dispose() {
     _eventController.close();
     super.dispose();
