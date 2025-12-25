@@ -142,10 +142,11 @@ class _GameScreenState extends State<GameScreen> {
       return _buildShopArea();
     }
 
-    if (enemy == null)
+    if (enemy == null) {
       return const Center(
         child: Text("Exploring...", style: TextStyle(color: Colors.white)),
       );
+    }
 
     return Container(
       width: double.infinity,
