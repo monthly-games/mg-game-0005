@@ -1,39 +1,240 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:mg_common_game/core/ui/theme/game_theme.dart';
+import 'package:provider/provider.dart';
+import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
 import 'package:mg_common_game/core/economy/gold_manager.dart';
 import 'package:mg_common_game/core/audio/audio_manager.dart';
-import 'ui/main_menu_screen.dart';
+import 'package:mg_common_game/systems/progression/upgrade_manager.dart';
 import 'game/logic/meta_progression_manager.dart';
+import 'game/procedural_manager.dart';
+import 'game/permadeath_manager.dart';
+import 'game/powerup_manager.dart';
+import 'ui/main_menu_screen.dart';
 
-void main() {
+// ============================================================
+// Roguelike Dungeon — MG-0005
+// Genre: Puzzle (Roguelike subgenre) · Region: India
+// Phase 1 Week 4: Mechanic Enhancement
+//
+// Core loop: Explore → Match Puzzle → Defeat Enemies → Die → Upgrade → Repeat
+// Subsystems: Procedural generation, Permadeath meta-progression,
+//             In-run powerups, UpgradeManager integration
+// ============================================================
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  _setupDI();
+  await _initializeSystems();
   runApp(const RoguelikeDungeonApp());
 }
 
-void _setupDI() {
-  final goldManager = GoldManager();
-  GetIt.I.registerSingleton<GoldManager>(goldManager);
+// ============================================================
+// System Initialization — correct dependency order
+// ============================================================
 
-  final audioManager = AudioManager();
-  GetIt.I.registerSingleton<AudioManager>(audioManager);
-  audioManager.initialize();
+/// Initialize all DI-registered systems in correct dependency order.
+/// mg_common_game systems first, then game-specific managers.
+Future<void> _initializeSystems() async {
+  final di = GetIt.I;
 
-  final metaManager = MetaProgressionManager();
-  GetIt.I.registerSingleton<MetaProgressionManager>(metaManager);
+  // ── mg_common_game core systems ──────────────────────────
+  if (!di.isRegistered<GoldManager>()) {
+    di.registerSingleton<GoldManager>(GoldManager());
+  }
+
+  if (!di.isRegistered<AudioManager>()) {
+    final audioManager = AudioManager();
+    di.registerSingleton<AudioManager>(audioManager);
+    audioManager.initialize();
+  }
+
+  if (!di.isRegistered<UpgradeManager>()) {
+    final upgrades = UpgradeManager();
+    di.registerSingleton<UpgradeManager>(upgrades);
+    _registerUpgrades(upgrades);
+    await upgrades.loadUpgrades();
+  }
+
+  // ── Game-specific managers ───────────────────────────────
+  if (!di.isRegistered<MetaProgressionManager>()) {
+    di.registerSingleton<MetaProgressionManager>(MetaProgressionManager());
+  }
+
+  if (!di.isRegistered<ProceduralManager>()) {
+    final procedural = ProceduralManager();
+    procedural.syncUpgrades();
+    di.registerSingleton<ProceduralManager>(procedural);
+  }
+
+  if (!di.isRegistered<PermadeathManager>()) {
+    final permadeath = PermadeathManager();
+    permadeath.syncUpgrades();
+    di.registerSingleton<PermadeathManager>(permadeath);
+  }
+
+  if (!di.isRegistered<PowerupManager>()) {
+    final powerups = PowerupManager();
+    powerups.syncUpgrades();
+    di.registerSingleton<PowerupManager>(powerups);
+  }
 }
+
+// ============================================================
+// Upgrade Registration — 8 roguelike-themed upgrades
+// Categories: procedural (3), permadeath (2), powerup (3)
+// ============================================================
+
+void _registerUpgrades(UpgradeManager manager) {
+  // ── Procedural upgrades (3) ──────────────────────────────
+
+  manager.registerUpgrade(Upgrade(
+    id: 'room_variety',
+    name: 'Cartographer\'s Eye',
+    description: 'Unlock additional room types in procedural generation.',
+    maxLevel: 5,
+    baseCost: 80,
+    costMultiplier: 1.5,
+    valuePerLevel: 1.0, // +1 room type per level
+  ));
+
+  manager.registerUpgrade(Upgrade(
+    id: 'difficulty_scaling',
+    name: 'Veteran\'s Wisdom',
+    description: 'Reduce enemy stat scaling per floor by 7% per level.',
+    maxLevel: 8,
+    baseCost: 120,
+    costMultiplier: 1.6,
+    valuePerLevel: 0.07, // -7% difficulty per level
+  ));
+
+  manager.registerUpgrade(Upgrade(
+    id: 'treasure_frequency',
+    name: 'Fortune Seeker',
+    description: 'Increase treasure room spawn chance by 5% per level.',
+    maxLevel: 8,
+    baseCost: 100,
+    costMultiplier: 1.5,
+    valuePerLevel: 0.05, // +5% treasure chance per level
+  ));
+
+  // ── Permadeath upgrades (2) ──────────────────────────────
+
+  manager.registerUpgrade(Upgrade(
+    id: 'starting_health',
+    name: 'Soul Fortification',
+    description: 'Gain +15 starting HP per level on each new run.',
+    maxLevel: 10,
+    baseCost: 150,
+    costMultiplier: 1.5,
+    valuePerLevel: 15.0, // +15 HP per level
+  ));
+
+  manager.registerUpgrade(Upgrade(
+    id: 'unlock_slots',
+    name: 'Perk Mastery',
+    description: 'Carry one additional persistent perk per level.',
+    maxLevel: 5,
+    baseCost: 200,
+    costMultiplier: 1.8,
+    valuePerLevel: 1.0, // +1 perk slot per level
+  ));
+
+  // ── Powerup upgrades (3) ────────────────────────────────
+
+  manager.registerUpgrade(Upgrade(
+    id: 'powerup_duration',
+    name: 'Lasting Enchantment',
+    description: 'Extend all powerup durations by 5 seconds per level.',
+    maxLevel: 8,
+    baseCost: 100,
+    costMultiplier: 1.4,
+    valuePerLevel: 5.0, // +5 seconds per level
+  ));
+
+  manager.registerUpgrade(Upgrade(
+    id: 'stack_limit',
+    name: 'Arcane Amplifier',
+    description: 'Allow one additional powerup stack per level.',
+    maxLevel: 4,
+    baseCost: 250,
+    costMultiplier: 2.0,
+    valuePerLevel: 1.0, // +1 max stack per level
+  ));
+
+  manager.registerUpgrade(Upgrade(
+    id: 'spawn_rate',
+    name: 'Loot Magnet',
+    description: 'Increase powerup drop chance by 5% per level.',
+    maxLevel: 8,
+    baseCost: 80,
+    costMultiplier: 1.4,
+    valuePerLevel: 0.05, // +5% drop chance per level
+  ));
+}
+
+// ============================================================
+// App Root — MultiProvider wraps all upgrade-related state
+// ============================================================
 
 class RoguelikeDungeonApp extends StatelessWidget {
   const RoguelikeDungeonApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Roguelike Dungeon',
-      theme: GameTheme.darkTheme,
-      home: const MainMenuScreen(),
-      debugShowCheckedModeBanner: false,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(
+          value: GetIt.I<UpgradeManager>(),
+        ),
+        ChangeNotifierProvider.value(
+          value: GetIt.I<MetaProgressionManager>(),
+        ),
+        ChangeNotifierProvider.value(
+          value: GetIt.I<ProceduralManager>(),
+        ),
+        ChangeNotifierProvider.value(
+          value: GetIt.I<PermadeathManager>(),
+        ),
+        ChangeNotifierProvider.value(
+          value: GetIt.I<PowerupManager>(),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Roguelike Dungeon',
+        theme: _buildDungeonTheme(),
+        home: const MainMenuScreen(),
+        debugShowCheckedModeBanner: false,
+      ),
+    );
+  }
+
+  /// Dungeon-themed dark mode with India-region orange accents
+  ThemeData _buildDungeonTheme() {
+    return ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: MGColors.indiaPrimary,
+        brightness: Brightness.dark,
+      ),
+      useMaterial3: true,
+      scaffoldBackgroundColor: const Color(0xFF0D0D1A),
+      appBarTheme: const AppBarTheme(
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+      ),
+      cardTheme: CardThemeData(
+        elevation: 2,
+        color: const Color(0xFF1A1A2E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
     );
   }
 }
