@@ -383,8 +383,8 @@ class _GameScreenState extends State<GameScreen> {
       onPressed: enabled ? onTap : null,
       style: ElevatedButton.styleFrom(
         backgroundColor: enabled
-            ? color.withOpacity(0.2)
-            : Colors.grey.withOpacity(0.1),
+            ? color.withValues(alpha: 0.2)
+            : Colors.grey.withValues(alpha: 0.1),
         foregroundColor: color,
         side: BorderSide(color: enabled ? color : Colors.grey),
       ),
@@ -440,7 +440,7 @@ class _GameScreenState extends State<GameScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: block?.isSelected == true
-                            ? Colors.white.withOpacity(0.3)
+                            ? Colors.white.withValues(alpha: 0.3)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
