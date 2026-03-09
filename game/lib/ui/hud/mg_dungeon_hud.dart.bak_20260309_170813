@@ -15,7 +15,6 @@ class MGDungeonHud extends StatelessWidget {
   final int? enemyMaxHp;
   final VoidCallback? onPause;
   final VoidCallback? onInventory;
-  final VoidCallback? onDailyHub;
 
   const MGDungeonHud({
     super.key,
@@ -30,7 +29,6 @@ class MGDungeonHud extends StatelessWidget {
     this.enemyMaxHp,
     this.onPause,
     this.onInventory,
-    this.onDailyHub,
   });
 
   @override
@@ -62,16 +60,6 @@ class MGDungeonHud extends StatelessWidget {
                 ),
 
                 // 일시정지 버튼
-        if (onDailyHub != null)
-          MGIconButton(
-            icon: Icons.calendar_today,
-            onPressed: onDailyHub,
-            size: 44,
-            backgroundColor: MGColors.info.withValues(alpha: 0.8),
-            color: MGColors.textHighEmphasis,
-            tooltip: 'Daily Hub',
-          ),
-        MGSpacing.hXs,
                 MGIconButton(
                   icon: Icons.pause,
                   onPressed: onPause,
