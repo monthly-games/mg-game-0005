@@ -40,10 +40,11 @@ dependencies:
   provider: ^6.1.2
   get_it: ^9.2.0
   mg_common_game:
-    path: ../../../repos/mg-common-game
+    path: ../../../libs/mg_common_game
 
+  firebase_core: any
+  firebase_analytics: any
 dev_dependencies:
-  google_mobile_ads: ^5.2.0
   flutter_test:
     sdk: flutter
 
