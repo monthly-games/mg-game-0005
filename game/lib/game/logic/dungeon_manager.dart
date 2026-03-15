@@ -166,6 +166,7 @@ class DungeonManager extends ChangeNotifier {
     _audioManager.playSfx('sfx_match.wav');
     int damage = 0;
     int heal = 0;
+    int shield = 0; // ignore: unused_local_variable
 
     for (final type in matchedTypes) {
       switch (type) {
