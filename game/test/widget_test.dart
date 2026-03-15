@@ -3,7 +3,7 @@ import 'package:game/main.dart';
 
 void main() {
   testWidgets('2048 Merge smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const Merge2048App());
+    await tester.pumpWidget(const RoguelikeDungeonApp());
 
     // 초기 타일 확인 (2개의 타일이 생성되어야 함)
     expect(find.text('2'), findsWidgets);

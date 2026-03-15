@@ -30,6 +30,8 @@ class DungeonManager extends ChangeNotifier {
 
   Player get player => _player;
   Enemy? get currentEnemy => _currentEnemy;
+  int get currentFloor => _currentFloor;
+  PuzzleBoard get puzzleBoard => _puzzleBoard;
   // Economy
   int _gold = 0;
   bool _isShopAvailable = false;
@@ -164,7 +166,6 @@ class DungeonManager extends ChangeNotifier {
     _audioManager.playSfx('sfx_match.wav');
     int damage = 0;
     int heal = 0;
-    int shield = 0;
 
     for (final type in matchedTypes) {
       switch (type) {

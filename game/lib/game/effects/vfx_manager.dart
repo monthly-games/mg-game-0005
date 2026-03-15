@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 /// VFX Manager for Roguelike Puzzle Dungeon (MG-0005)
 /// Puzzle + Roguelike 게임 전용 이펙트 관리자
-class VfxManager extends Component with HasGameRef {
+class VfxManager extends Component with HasGameReference {
   VfxManager();
 
   final Random _random = Random();
@@ -18,7 +18,7 @@ class VfxManager extends Component with HasGameRef {
   /// 퍼즐 매치 성공
   void showPuzzleMatch(Vector2 position, Color matchColor, {int matchSize = 3}) {
     final intensity = matchSize / 3;
-    gameRef.add(
+    game.add(
       _createBurstEffect(
         position: position,
         color: matchColor,
@@ -31,10 +31,10 @@ class VfxManager extends Component with HasGameRef {
 
   /// 퍼즐 콤보
   void showPuzzleCombo(Vector2 position, int comboCount) {
-    gameRef.add(_ComboText(position: position, combo: comboCount));
+    game.add(_ComboText(position: position, combo: comboCount));
 
     if (comboCount >= 3) {
-      gameRef.add(
+      game.add(
         _createSparkleEffect(position: position, color: Colors.amber, count: 12),
       );
     }
@@ -49,7 +49,7 @@ class VfxManager extends Component with HasGameRef {
           (_random.nextDouble() - 0.5) * 150,
           (_random.nextDouble() - 0.5) * 100,
         );
-        gameRef.add(
+        game.add(
           _createExplosionEffect(
             position: centerPosition + offset,
             color: [Colors.yellow, Colors.orange, Colors.purple][i % 3],
@@ -68,29 +68,29 @@ class VfxManager extends Component with HasGameRef {
 
   /// 던전 입장 포탈
   void showDungeonPortal(Vector2 position) {
-    gameRef.add(_PortalEffect(position: position));
+    game.add(_PortalEffect(position: position));
   }
 
   /// 몬스터 스폰
   void showMonsterSpawn(Vector2 position) {
-    gameRef.add(
+    game.add(
       _createSmokeEffect(position: position, count: 12, color: Colors.purple.shade900),
     );
-    gameRef.add(
+    game.add(
       _createConvergeEffect(position: position, color: Colors.purple),
     );
   }
 
   /// 몬스터 피격
   void showMonsterHit(Vector2 position, {bool isCritical = false}) {
-    gameRef.add(
+    game.add(
       _createHitEffect(position: position, isCritical: isCritical),
     );
   }
 
   /// 몬스터 처치
   void showMonsterDeath(Vector2 position) {
-    gameRef.add(
+    game.add(
       _createExplosionEffect(
         position: position,
         color: Colors.red,
@@ -98,7 +98,7 @@ class VfxManager extends Component with HasGameRef {
         radius: 50,
       ),
     );
-    gameRef.add(
+    game.add(
       _createSmokeEffect(position: position, count: 6, color: Colors.grey),
     );
   }
@@ -112,7 +112,7 @@ class VfxManager extends Component with HasGameRef {
           (_random.nextDouble() - 0.5) * 60,
           (_random.nextDouble() - 0.5) * 60,
         );
-        gameRef.add(
+        game.add(
           _createExplosionEffect(
             position: position + offset,
             color: i % 2 == 0 ? Colors.orange : Colors.red,
@@ -127,7 +127,7 @@ class VfxManager extends Component with HasGameRef {
 
   /// 데미지 숫자
   void showDamageNumber(Vector2 position, int damage, {bool isCritical = false}) {
-    gameRef.add(
+    game.add(
       _DamageNumber(position: position, damage: damage, isCritical: isCritical),
     );
   }
@@ -139,28 +139,28 @@ class VfxManager extends Component with HasGameRef {
   /// 아이템 획득
   void showItemPickup(Vector2 position, {bool isRare = false}) {
     final color = isRare ? Colors.purple : Colors.blue;
-    gameRef.add(
+    game.add(
       _createSparkleEffect(position: position, color: color, count: isRare ? 15 : 10),
     );
     if (isRare) {
-      gameRef.add(_createGroundCircle(position: position, color: Colors.purple));
+      game.add(_createGroundCircle(position: position, color: Colors.purple));
     }
   }
 
   /// 스킬 획득/업그레이드
   void showSkillAcquire(Vector2 position, Color skillColor) {
-    gameRef.add(
+    game.add(
       _createRisingEffect(position: position, color: skillColor, count: 15, speed: 80),
     );
-    gameRef.add(
+    game.add(
       _createGroundCircle(position: position, color: skillColor),
     );
-    gameRef.add(_SkillAcquireText(position: position));
+    game.add(_SkillAcquireText(position: position));
   }
 
   /// 스킬 사용
   void showSkillUse(Vector2 position, Color skillColor) {
-    gameRef.add(
+    game.add(
       _createBurstEffect(
         position: position,
         color: skillColor,
@@ -173,7 +173,7 @@ class VfxManager extends Component with HasGameRef {
 
   /// 힐 효과
   void showHeal(Vector2 position, int amount) {
-    gameRef.add(
+    game.add(
       _createRisingEffect(position: position, color: Colors.green, count: 12, speed: 50),
     );
     showNumberPopup(position, '+$amount', color: Colors.green);
@@ -185,7 +185,7 @@ class VfxManager extends Component with HasGameRef {
 
   /// 레벨업
   void showLevelUp(Vector2 position) {
-    gameRef.add(
+    game.add(
       _createExplosionEffect(
         position: position,
         color: Colors.amber,
@@ -193,19 +193,19 @@ class VfxManager extends Component with HasGameRef {
         radius: 80,
       ),
     );
-    gameRef.add(_LevelUpText(position: position));
+    game.add(_LevelUpText(position: position));
   }
 
   /// 골드 획득
   void showGoldGain(Vector2 position, int amount) {
-    gameRef.add(
+    game.add(
       _createCoinEffect(position: position, count: (amount / 20).clamp(5, 15).toInt()),
     );
   }
 
   /// 게임오버/사망
   void showPlayerDeath(Vector2 position) {
-    gameRef.add(
+    game.add(
       _createExplosionEffect(position: position, color: Colors.red, count: 50, radius: 100),
     );
     _triggerScreenShake(intensity: 15, duration: 0.8);
@@ -216,12 +216,12 @@ class VfxManager extends Component with HasGameRef {
   // ============================================================
 
   void showNumberPopup(Vector2 position, String text, {Color color = Colors.white}) {
-    gameRef.add(_NumberPopup(position: position, text: text, color: color));
+    game.add(_NumberPopup(position: position, text: text, color: color));
   }
 
   void _triggerScreenShake({double intensity = 5, double duration = 0.3}) {
-    if (gameRef.camera.viewfinder.children.isNotEmpty) {
-      gameRef.camera.viewfinder.add(
+    if (game.camera.viewfinder.children.isNotEmpty) {
+      game.camera.viewfinder.add(
         MoveByEffect(
           Vector2(intensity, 0),
           EffectController(
@@ -385,8 +385,11 @@ class VfxManager extends Component with HasGameRef {
                 final path = Path();
                 for (int j = 0; j < 4; j++) {
                   final a = (j * pi / 2);
-                  if (j == 0) path.moveTo(cos(a) * size, sin(a) * size);
-                  else path.lineTo(cos(a) * size, sin(a) * size);
+                  if (j == 0) {
+                    path.moveTo(cos(a) * size, sin(a) * size);
+                  } else {
+                    path.lineTo(cos(a) * size, sin(a) * size);
+                  }
                 }
                 path.close();
                 canvas.drawPath(path, Paint()..color = color.withValues(alpha: opacity));

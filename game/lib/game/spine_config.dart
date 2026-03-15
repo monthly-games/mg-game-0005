@@ -14,7 +14,7 @@ const kDungeonHeroMeta = SpineAssetMeta(
   atlasPath:
       'assets/spine/characters/dungeon_hero/dungeon_hero.atlas',
   skeletonPath:
-      'assets/spine/characters/dungeon_hero/dungeon_hero.skel',
+      'assets/spine/characters/dungeon_hero/dungeon_hero.json',
   animations: ['idle', 'walk', 'attack', 'hit'],
   defaultAnimation: 'idle',
   defaultMix: 0.2,
@@ -28,7 +28,7 @@ const kDungeonScoutMeta = SpineAssetMeta(
   atlasPath:
       'assets/spine/characters/dungeon_scout/dungeon_scout.atlas',
   skeletonPath:
-      'assets/spine/characters/dungeon_scout/dungeon_scout.skel',
+      'assets/spine/characters/dungeon_scout/dungeon_scout.json',
   animations: ['idle', 'walk', 'attack', 'hit'],
   defaultAnimation: 'idle',
   defaultMix: 0.2,
@@ -42,7 +42,7 @@ const kDungeonHealerMeta = SpineAssetMeta(
   atlasPath:
       'assets/spine/characters/dungeon_healer/dungeon_healer.atlas',
   skeletonPath:
-      'assets/spine/characters/dungeon_healer/dungeon_healer.skel',
+      'assets/spine/characters/dungeon_healer/dungeon_healer.json',
   animations: ['idle', 'walk', 'attack', 'hit'],
   defaultAnimation: 'idle',
   defaultMix: 0.2,

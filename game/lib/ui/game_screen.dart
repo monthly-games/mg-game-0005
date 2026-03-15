@@ -131,16 +131,13 @@ class _GameScreenState extends State<GameScreen> {
                 },
                 onDailyHub: () => Navigator.of(context).pushNamed('/daily-hub'),
                 onGuildWar: () {
-                  game.pauseEngine();
-                  Navigator.of(context).pushNamed('/guild-war').then((_) => game.resumeEngine());
+Navigator.of(context).pushNamed('/guild-war');
                 },
                 onTournament: () {
-                  game.pauseEngine();
-                  Navigator.of(context).pushNamed('/tournament').then((_) => game.resumeEngine());
+Navigator.of(context).pushNamed('/tournament');
                 },
                 onSeasonalEvent: () {
-                  game.pauseEngine();
-                  Navigator.of(context).pushNamed('/seasonal-event').then((_) => game.resumeEngine());
+Navigator.of(context).pushNamed('/seasonal-event');
                 },
               ),
             ],
@@ -448,7 +445,7 @@ class _GameScreenState extends State<GameScreen> {
                   return GestureDetector(
                     onTap: () {
                       board.selectBlock(r, c);
-                      _dungeonManager.notifyListeners(); // Force rebuild
+                      setState(() {}); // Force rebuild
                     },
                     child: Container(
                       decoration: BoxDecoration(
