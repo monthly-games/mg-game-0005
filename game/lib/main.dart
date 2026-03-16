@@ -11,6 +11,8 @@ import 'ui/main_menu_screen.dart';
 import 'screens/daily_quest_screen.dart';
 import 'screens/achievement_screen.dart';
 import 'screens/collection_screen.dart';
+import 'game/tutorial_config.dart';
+import 'game/balancing_config.dart';
 
 // ============================================================
 // Roguelike Dungeon — MG-0005
@@ -46,6 +48,29 @@ _registerCollections();
   }
   _registerAchievements();
   _registerDailyQuests();
+  // ── Tutorial & Balancing ──────────────────────────────────
+  if (!GetIt.I.isRegistered<TutorialManager>()) {
+    final tutorialManager = TutorialManager();
+    await tutorialManager.initialize();
+    tutorialManager.registerTutorial(
+      kOnboardingTutorial.id,
+      kOnboardingTutorial.steps,
+    );
+    GetIt.I.registerSingleton<TutorialManager>(tutorialManager);
+  }
+  if (!GetIt.I.isRegistered<BalancingManager>()) {
+    GetIt.I.registerSingleton<BalancingManager>(
+      BalancingManager(defaultConfig: kDefaultBalancingConfig),
+    );
+  }
+  // ── Q7 DI Fix: Missing Systems ──────────────────────────
+  if (!GetIt.I.isRegistered<BattlePassManager>()) {
+    GetIt.I.registerSingleton<BattlePassManager>(BattlePassManager());
+  }
+  if (!GetIt.I.isRegistered<GachaManager>()) {
+    GetIt.I.registerSingleton<GachaManager>(GachaManager());
+  }
+
   runApp(const RoguelikeDungeonApp());
 }
 
