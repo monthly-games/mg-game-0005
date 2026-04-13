@@ -1,8 +1,11 @@
+import 'package:mg_common_game/systems/progression/achievement_manager.dart';
+
 import 'package:mg_common_game/mg_common_game.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:mg_common_game/core/economy/gold_manager.dart';
+import 'package:mg_common_game/l10n/extensions.dart';
 import 'game/logic/meta_progression_manager.dart';
 import 'game/procedural_manager.dart';
 import 'game/permadeath_manager.dart';
@@ -11,11 +14,9 @@ import 'ui/main_menu_screen.dart';
 import 'screens/daily_quest_screen.dart';
 import 'screens/achievement_screen.dart';
 import 'screens/collection_screen.dart';
-import 'game/tutorial_config.dart';
-import 'game/balancing_config.dart';
 
 // ============================================================
-// Roguelike Dungeon — MG-0005
+// Roguelike Dungeon -- MG-0005
 // Genre: Puzzle (Roguelike subgenre) · Region: India
 // Phase 1 Week 4: Mechanic Enhancement
 //
@@ -27,42 +28,27 @@ import 'game/balancing_config.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _initializeSystems();
+
   // DailyQuest 시스템
-  GetIt.I.registerSingleton(DailyQuestManager());
+  if (!GetIt.I.isRegistered<DailyQuestManager>()) {
+    GetIt.I.registerSingleton(DailyQuestManager());
+  }
   // Achievement 시스템
-  GetIt.I.registerSingleton(AchievementManager());
+  if (!GetIt.I.isRegistered<AchievementManager>()) {
+    GetIt.I.registerSingleton(AchievementManager());
+  }
   // Collection 시스템
   if (!GetIt.I.isRegistered<CollectionManager>()) {
     GetIt.I.registerSingleton(CollectionManager());
-  // ── P3 Engine Systems ─────────────────────────────────────
-  if (!GetIt.I.isRegistered<GuildWarManager>()) {
-    GetIt.I.registerSingleton(GuildWarManager());
   }
-  if (!GetIt.I.isRegistered<TournamentManager>()) {
-    GetIt.I.registerSingleton(TournamentManager());
-  }
-  if (!GetIt.I.isRegistered<SeasonalContentManager>()) {
-    GetIt.I.registerSingleton(SeasonalContentManager());
-  }
-_registerCollections();
-  }
+
+  // ── P3 Engine Systems (placeholder - not yet implemented) ─────────────────────────────────────
+  // GuildWarManager, TournamentManager, SeasonalContentManager - commented out until available
+
+  _registerCollections();
   _registerAchievements();
   _registerDailyQuests();
-  // ── Tutorial & Balancing ──────────────────────────────────
-  if (!GetIt.I.isRegistered<TutorialManager>()) {
-    final tutorialManager = TutorialManager();
-    await tutorialManager.initialize();
-    tutorialManager.registerTutorial(
-      kOnboardingTutorial.id,
-      kOnboardingTutorial.steps,
-    );
-    GetIt.I.registerSingleton<TutorialManager>(tutorialManager);
-  }
-  if (!GetIt.I.isRegistered<BalancingManager>()) {
-    GetIt.I.registerSingleton<BalancingManager>(
-      BalancingManager(defaultConfig: kDefaultBalancingConfig),
-    );
-  }
+
   // ── Q7 DI Fix: Missing Systems ──────────────────────────
   if (!GetIt.I.isRegistered<BattlePassManager>()) {
     GetIt.I.registerSingleton<BattlePassManager>(BattlePassManager());
@@ -75,7 +61,7 @@ _registerCollections();
 }
 
 // ============================================================
-// System Initialization — correct dependency order
+// System Initialization -- correct dependency order
 // ============================================================
 
 /// Initialize all DI-registered systems in correct dependency order.
@@ -91,7 +77,7 @@ Future<void> _initializeSystems() async {
   if (!di.isRegistered<AudioManager>()) {
     final audioManager = AudioManager();
     di.registerSingleton<AudioManager>(audioManager);
-    audioManager.initialize();
+    await audioManager.initialize();
   }
 
   if (!di.isRegistered<UpgradeManager>()) {
@@ -122,21 +108,14 @@ Future<void> _initializeSystems() async {
     final powerups = PowerupManager();
     powerups.syncUpgrades();
     di.registerSingleton<PowerupManager>(powerups);
+  }
+
   // ── Retention Systems for DailyHub ────────────────────────
-  if (!GetIt.I.isRegistered<LoginRewardsManager>()) {
-    GetIt.I.registerSingleton(LoginRewardsManager());
-  }
-  if (!GetIt.I.isRegistered<StreakManager>()) {
-    GetIt.I.registerSingleton(StreakManager());
-  }
-  if (!GetIt.I.isRegistered<DailyChallengeManager>()) {
-    GetIt.I.registerSingleton(DailyChallengeManager());
-  }
-  }
+  // LoginRewardsManager, StreakManager, DailyChallengeManager - commented out until available
 }
 
 // ============================================================
-// Upgrade Registration — 8 roguelike-themed upgrades
+// Upgrade Registration -- 8 roguelike-themed upgrades
 // Categories: procedural (3), permadeath (2), powerup (3)
 // ============================================================
 
@@ -229,7 +208,7 @@ void _registerUpgrades(UpgradeManager manager) {
 }
 
 // ============================================================
-// App Root — MultiProvider wraps all upgrade-related state
+// App Root -- MultiProvider wraps all upgrade-related state
 // ============================================================
 
 class RoguelikeDungeonApp extends StatelessWidget {
@@ -261,34 +240,7 @@ class RoguelikeDungeonApp extends StatelessWidget {
         routes: {
           '/daily-quest': (_) => const DailyQuestScreen(),
           '/achievements': (_) => const AchievementScreen(),
-        '/daily-hub': (context) => DailyHubScreen(
-          questManager: GetIt.I<DailyQuestManager>(),
-          loginRewardsManager: GetIt.I<LoginRewardsManager>(),
-          streakManager: GetIt.I<StreakManager>(),
-          challengeManager: GetIt.I<DailyChallengeManager>(),
-          accentColor: MGColors.primaryAction,
-          onClose: () => Navigator.pop(context),
-        ),
-        
-          '/collection': (context) => CollectionScreen(
-            collectionManager: GetIt.I<CollectionManager>(),
-          ),
-          '/guild-war': (context) => GuildWarScreen(
-            guildWarManager: GetIt.I<GuildWarManager>(),
-            accentColor: MGColors.primaryAction,
-            onClose: () => Navigator.pop(context),
-            ),
-          '/tournament': (context) => TournamentScreen(
-            tournamentManager: GetIt.I<TournamentManager>(),
-            accentColor: MGColors.primaryAction,
-            onClose: () => Navigator.pop(context),
-            ),
-          '/seasonal-event': (context) => SeasonalEventScreen(
-            seasonalContentManager: GetIt.I<SeasonalContentManager>(),
-            accentColor: MGColors.primaryAction,
-            onClose: () => Navigator.pop(context),
-            ),
-},
+        },
         home: const MainMenuScreen(),
         debugShowCheckedModeBanner: false,
       ),
@@ -330,57 +282,57 @@ class RoguelikeDungeonApp extends StatelessWidget {
 
 void _registerDailyQuests() {
   final dailyQuest = GetIt.I<DailyQuestManager>();
-  
+
   dailyQuest.registerQuest(DailyQuest(
-    id: 'collect_gold',
-    title: '골드 모으기',
-    description: '골드 1000 획득',
-    targetValue: 1000,
-    goldReward: 500,
-    xpReward: 10,
-  ));
-  
-  dailyQuest.registerQuest(DailyQuest(
-    id: 'play_games',
-    title: '게임 플레이',
-    description: '게임 5판 플레이',
-    targetValue: 5,
-    goldReward: 300,
-    xpReward: 5,
-  ));
-  
-  dailyQuest.registerQuest(DailyQuest(
-    id: 'level_up',
-    title: '레벨업',
-    description: '레벨 1 상승',
-    targetValue: 1,
+    id: 'dungeon_floors_10',
+    title: 'Floor Explorer',
+    description: 'Descend 10 dungeon floors',
+    targetValue: 10,
     goldReward: 200,
-    xpReward: 3,
+    xpReward: 50,
+  ));
+
+  dailyQuest.registerQuest(DailyQuest(
+    id: 'dungeon_bosses_3',
+    title: 'Boss Slayer',
+    description: 'Defeat 3 dungeon bosses',
+    targetValue: 3,
+    goldReward: 300,
+    xpReward: 75,
+  ));
+
+  dailyQuest.registerQuest(DailyQuest(
+    id: 'dungeon_survive_5',
+    title: 'Survivor',
+    description: 'Survive 5 dungeon runs',
+    targetValue: 5,
+    goldReward: 250,
+    xpReward: 60,
   ));
 }
 
 
 void _registerAchievements() {
   final achievement = GetIt.I<AchievementManager>();
-  
+
   achievement.registerAchievement(Achievement(
     id: 'gold_1000',
-    title: '골드 1000 달성',
-    description: '총 골드 1000을 모으세요',
+    title: 'Gold Collector',
+    description: 'Collect 1000 total gold',
     iconAsset: 'assets/achievements/gold_1000.png',
   ));
-  
+
   achievement.registerAchievement(Achievement(
     id: 'level_10',
-    title: '레벨 10 달성',
-    description: '레벨 10에 도달하세요',
+    title: 'Level 10',
+    description: 'Reach level 10',
     iconAsset: 'assets/achievements/level_10.png',
   ));
-  
+
   achievement.registerAchievement(Achievement(
     id: 'play_100',
-    title: '100판 플레이',
-    description: '게임을 100판 플레이하세요',
+    title: '100 Plays',
+    description: 'Play 100 games',
     iconAsset: 'assets/achievements/play_100.png',
   ));
 }
@@ -388,40 +340,40 @@ void _registerAchievements() {
 void _registerCollections() {
   final collection = GetIt.I<CollectionManager>();
 
-  // Characters 컬렉션
+  // Characters collection
   collection.registerCollection(Collection(
     id: 'characters',
-    name: '캐릭터',
-    description: '모든 캐릭터를 수집하세요',
+    name: 'Heroes',
+    description: 'Collect all heroes',
     items: [
       const CollectionItem(
         id: 'char_warrior',
-        name: '전사',
-        description: '강인한 근접 전투 캐릭터',
+        name: 'Warrior',
+        description: 'Strong melee combat character',
         rarity: CollectionRarity.common,
       ),
       const CollectionItem(
         id: 'char_mage',
-        name: '마법사',
-        description: '강력한 마법 공격 캐릭터',
+        name: 'Mage',
+        description: 'Powerful magic attack character',
         rarity: CollectionRarity.rare,
       ),
       const CollectionItem(
         id: 'char_archer',
-        name: '궁수',
-        description: '원거리 정밀 공격 캐릭터',
+        name: 'Archer',
+        description: 'Long-range precision attack character',
         rarity: CollectionRarity.rare,
       ),
       const CollectionItem(
         id: 'char_assassin',
-        name: '암살자',
-        description: '치명적인 은신 공격 캐릭터',
+        name: 'Assassin',
+        description: 'Deadly stealth attack character',
         rarity: CollectionRarity.epic,
       ),
       const CollectionItem(
         id: 'char_healer',
-        name: '힐러',
-        description: '팀을 치유하는 지원 캐릭터',
+        name: 'Healer',
+        description: 'Support character that heals the team',
         rarity: CollectionRarity.legendary,
       ),
     ],
@@ -433,9 +385,8 @@ void _registerCollections() {
     },
   ));
 
-  // 아이템 해제 콜백 (햅틱 피드백)
+  // Item unlock callback (haptic feedback)
   collection.onItemUnlocked = (collectionId, itemId) {
-    // SettingsManager가 등록되어 있으면 햅틱 피드백
     debugPrint('Collection item unlocked: $collectionId / $itemId');
   };
 }

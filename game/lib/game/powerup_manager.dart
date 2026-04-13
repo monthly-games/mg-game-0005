@@ -5,7 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mg_common_game/systems/progression/upgrade_manager.dart';
 
 // ============================================================
-// PowerupManager — MG-0005 Roguelike Dungeon
+// PowerupManager -- MG-0005 Roguelike Dungeon
 // Handles temporary in-run powerup spawning, duration tracking,
 // stacking logic, and expiration.
 // ============================================================

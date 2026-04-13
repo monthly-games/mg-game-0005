@@ -1,6 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages, prefer_const_constructors
 // ============================================================
-// Achievement Screen — MG-0005 Roguelike Dungeon
+// Achievement Screen -- MG-0005 Roguelike Dungeon
 // Genre: Roguelike · Retention System UI
 //
 // Firebase Analytics Events:

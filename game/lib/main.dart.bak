@@ -1,14 +1,9 @@
+import 'package:mg_common_game/mg_common_game.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:mg_common_game/systems/systems.dart';
-import 'package:mg_common_game/systems/progression/achievement_manager.dart';
-import 'package:mg_common_game/systems/quests/daily_quest.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
-import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
 import 'package:mg_common_game/core/economy/gold_manager.dart';
-import 'package:mg_common_game/core/audio/audio_manager.dart';
-import 'package:mg_common_game/systems/progression/upgrade_manager.dart';
+import 'package:mg_common_game/l10n/extensions.dart';
 import 'game/logic/meta_progression_manager.dart';
 import 'game/procedural_manager.dart';
 import 'game/permadeath_manager.dart';
@@ -16,9 +11,10 @@ import 'game/powerup_manager.dart';
 import 'ui/main_menu_screen.dart';
 import 'screens/daily_quest_screen.dart';
 import 'screens/achievement_screen.dart';
+import 'screens/collection_screen.dart';
 
 // ============================================================
-// Roguelike Dungeon — MG-0005
+// Roguelike Dungeon -- MG-0005
 // Genre: Puzzle (Roguelike subgenre) · Region: India
 // Phase 1 Week 4: Mechanic Enhancement
 //
@@ -30,6 +26,7 @@ import 'screens/achievement_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _initializeSystems();
+
   // DailyQuest 시스템
   GetIt.I.registerSingleton(DailyQuestManager());
   // Achievement 시스템
@@ -37,15 +34,28 @@ void main() async {
   // Collection 시스템
   if (!GetIt.I.isRegistered<CollectionManager>()) {
     GetIt.I.registerSingleton(CollectionManager());
-    _registerCollections();
   }
+
+  // ── P3 Engine Systems (placeholder - not yet implemented) ─────────────────────────────────────
+  // GuildWarManager, TournamentManager, SeasonalContentManager - commented out until available
+
+  _registerCollections();
   _registerAchievements();
   _registerDailyQuests();
+
+  // ── Q7 DI Fix: Missing Systems ──────────────────────────
+  if (!GetIt.I.isRegistered<BattlePassManager>()) {
+    GetIt.I.registerSingleton<BattlePassManager>(BattlePassManager());
+  }
+  if (!GetIt.I.isRegistered<GachaManager>()) {
+    GetIt.I.registerSingleton<GachaManager>(GachaManager());
+  }
+
   runApp(const RoguelikeDungeonApp());
 }
 
 // ============================================================
-// System Initialization — correct dependency order
+// System Initialization -- correct dependency order
 // ============================================================
 
 /// Initialize all DI-registered systems in correct dependency order.
@@ -61,7 +71,7 @@ Future<void> _initializeSystems() async {
   if (!di.isRegistered<AudioManager>()) {
     final audioManager = AudioManager();
     di.registerSingleton<AudioManager>(audioManager);
-    audioManager.initialize();
+    await audioManager.initialize();
   }
 
   if (!di.isRegistered<UpgradeManager>()) {
@@ -93,10 +103,13 @@ Future<void> _initializeSystems() async {
     powerups.syncUpgrades();
     di.registerSingleton<PowerupManager>(powerups);
   }
+
+  // ── Retention Systems for DailyHub ────────────────────────
+  // LoginRewardsManager, StreakManager, DailyChallengeManager - commented out until available
 }
 
 // ============================================================
-// Upgrade Registration — 8 roguelike-themed upgrades
+// Upgrade Registration -- 8 roguelike-themed upgrades
 // Categories: procedural (3), permadeath (2), powerup (3)
 // ============================================================
 
@@ -189,7 +202,7 @@ void _registerUpgrades(UpgradeManager manager) {
 }
 
 // ============================================================
-// App Root — MultiProvider wraps all upgrade-related state
+// App Root -- MultiProvider wraps all upgrade-related state
 // ============================================================
 
 class RoguelikeDungeonApp extends StatelessWidget {
@@ -263,29 +276,29 @@ class RoguelikeDungeonApp extends StatelessWidget {
 
 void _registerDailyQuests() {
   final dailyQuest = GetIt.I<DailyQuestManager>();
-  
+
   dailyQuest.registerQuest(DailyQuest(
     id: 'collect_gold',
-    title: '골드 모으기',
-    description: '골드 1000 획득',
+    title: 'Collect Gold',
+    description: 'Earn 1000 gold',
     targetValue: 1000,
     goldReward: 500,
     xpReward: 10,
   ));
-  
+
   dailyQuest.registerQuest(DailyQuest(
     id: 'play_games',
-    title: '게임 플레이',
-    description: '게임 5판 플레이',
+    title: 'Play Games',
+    description: 'Play 5 games',
     targetValue: 5,
     goldReward: 300,
     xpReward: 5,
   ));
-  
+
   dailyQuest.registerQuest(DailyQuest(
     id: 'level_up',
-    title: '레벨업',
-    description: '레벨 1 상승',
+    title: 'Level Up',
+    description: 'Gain 1 level',
     targetValue: 1,
     goldReward: 200,
     xpReward: 3,
@@ -295,25 +308,25 @@ void _registerDailyQuests() {
 
 void _registerAchievements() {
   final achievement = GetIt.I<AchievementManager>();
-  
+
   achievement.registerAchievement(Achievement(
     id: 'gold_1000',
-    title: '골드 1000 달성',
-    description: '총 골드 1000을 모으세요',
+    title: 'Gold Collector',
+    description: 'Collect 1000 total gold',
     iconAsset: 'assets/achievements/gold_1000.png',
   ));
-  
+
   achievement.registerAchievement(Achievement(
     id: 'level_10',
-    title: '레벨 10 달성',
-    description: '레벨 10에 도달하세요',
+    title: 'Level 10',
+    description: 'Reach level 10',
     iconAsset: 'assets/achievements/level_10.png',
   ));
-  
+
   achievement.registerAchievement(Achievement(
     id: 'play_100',
-    title: '100판 플레이',
-    description: '게임을 100판 플레이하세요',
+    title: '100 Plays',
+    description: 'Play 100 games',
     iconAsset: 'assets/achievements/play_100.png',
   ));
 }
@@ -321,54 +334,53 @@ void _registerAchievements() {
 void _registerCollections() {
   final collection = GetIt.I<CollectionManager>();
 
-  // Characters 컬렉션
-  collection.registerCollection(const Collection(
+  // Characters collection
+  collection.registerCollection(Collection(
     id: 'characters',
-    name: '캐릭터',
-    description: '모든 캐릭터를 수집하세요',
+    name: 'Heroes',
+    description: 'Collect all heroes',
     items: [
-      CollectionItem(
+      const CollectionItem(
         id: 'char_warrior',
-        name: '전사',
-        description: '강인한 근접 전투 캐릭터',
+        name: 'Warrior',
+        description: 'Strong melee combat character',
         rarity: CollectionRarity.common,
       ),
-      CollectionItem(
+      const CollectionItem(
         id: 'char_mage',
-        name: '마법사',
-        description: '강력한 마법 공격 캐릭터',
+        name: 'Mage',
+        description: 'Powerful magic attack character',
         rarity: CollectionRarity.rare,
       ),
-      CollectionItem(
+      const CollectionItem(
         id: 'char_archer',
-        name: '궁수',
-        description: '원거리 정밀 공격 캐릭터',
+        name: 'Archer',
+        description: 'Long-range precision attack character',
         rarity: CollectionRarity.rare,
       ),
-      CollectionItem(
+      const CollectionItem(
         id: 'char_assassin',
-        name: '암살자',
-        description: '치명적인 은신 공격 캐릭터',
+        name: 'Assassin',
+        description: 'Deadly stealth attack character',
         rarity: CollectionRarity.epic,
       ),
-      CollectionItem(
+      const CollectionItem(
         id: 'char_healer',
-        name: '힐러',
-        description: '팀을 치유하는 지원 캐릭터',
+        name: 'Healer',
+        description: 'Support character that heals the team',
         rarity: CollectionRarity.legendary,
       ),
     ],
-    completionReward: CollectionReward(gold: 10000, gems: 500, experience: 2000),
+    completionReward: const CollectionReward(type: RewardType.gold, amount: 10000),
     milestoneRewards: {
-      25: CollectionReward(gold: 1000, gems: 50),
-      50: CollectionReward(gold: 3000, gems: 150),
-      75: CollectionReward(gold: 5000, gems: 300),
+      25: const CollectionReward(type: RewardType.gold, amount: 1000),
+      50: const CollectionReward(type: RewardType.gold, amount: 3000),
+      75: const CollectionReward(type: RewardType.gold, amount: 5000),
     },
   ));
 
-  // 아이템 해제 콜백 (햅틱 피드백)
+  // Item unlock callback (haptic feedback)
   collection.onItemUnlocked = (collectionId, itemId) {
-    // SettingsManager가 등록되어 있으면 햅틱 피드백
     debugPrint('Collection item unlocked: $collectionId / $itemId');
   };
 }

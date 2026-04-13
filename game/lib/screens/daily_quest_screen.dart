@@ -1,6 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages, prefer_const_constructors
 // ============================================================
-// Daily Quest Screen — MG-0005 Roguelike Dungeon
+// Daily Quest Screen -- MG-0005 Roguelike Dungeon
 // Genre: Roguelike · Retention System UI
 //
 // Firebase Analytics Events:
@@ -10,7 +10,8 @@
 //   - daily_quest_all_completed: All quests done
 //
 // Template: Based on MG-0010 canonical template.
-// ============================================================
+// ============================================================import 'package:mg_common_game/l10n/localization.dart';
+
 
 import 'dart:async';
 
@@ -330,7 +331,7 @@ class _DailyQuestScreenState extends State<DailyQuestScreen> {
               const Spacer(),
               if (isClaimable)
                 MGButton(
-                  label: 'Claim',
+                  label: "Claimed",
                   size: MGButtonSize.small,
                   icon: Icons.card_giftcard_rounded,
                   backgroundColor: MGColors.success,

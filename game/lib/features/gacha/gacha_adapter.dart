@@ -53,30 +53,30 @@ class CardGachaAdapter extends ChangeNotifier {
   List<GachaItem> _generateItems() {
     return [
       // UR (0.6%)
-      const GachaItem(id: 'ur_dungeon_001', nameKr: '전설의 Card', rarity: GachaRarity.ultraRare),
-      const GachaItem(id: 'ur_dungeon_002', nameKr: '신화의 Card', rarity: GachaRarity.ultraRare),
+      GachaItem(id: 'ur_dungeon_001', nameKr: '전설의 Card', rarity: GachaRarity.ultraRare),
+      GachaItem(id: 'ur_dungeon_002', nameKr: '신화의 Card', rarity: GachaRarity.ultraRare),
       // SSR (2.4%)
-      const GachaItem(id: 'ssr_dungeon_001', nameKr: '영웅의 Card', rarity: GachaRarity.superRare),
-      const GachaItem(id: 'ssr_dungeon_002', nameKr: '고대의 Card', rarity: GachaRarity.superRare),
-      const GachaItem(id: 'ssr_dungeon_003', nameKr: '황금의 Card', rarity: GachaRarity.superRare),
+      GachaItem(id: 'ssr_dungeon_001', nameKr: '영웅의 Card', rarity: GachaRarity.superRare),
+      GachaItem(id: 'ssr_dungeon_002', nameKr: '고대의 Card', rarity: GachaRarity.superRare),
+      GachaItem(id: 'ssr_dungeon_003', nameKr: '황금의 Card', rarity: GachaRarity.superRare),
       // SR (12%)
-      const GachaItem(id: 'sr_dungeon_001', nameKr: '희귀한 Card A', rarity: GachaRarity.superRare),
-      const GachaItem(id: 'sr_dungeon_002', nameKr: '희귀한 Card B', rarity: GachaRarity.superRare),
-      const GachaItem(id: 'sr_dungeon_003', nameKr: '희귀한 Card C', rarity: GachaRarity.superRare),
-      const GachaItem(id: 'sr_dungeon_004', nameKr: '희귀한 Card D', rarity: GachaRarity.superRare),
+      GachaItem(id: 'sr_dungeon_001', nameKr: '희귀한 Card A', rarity: GachaRarity.superRare),
+      GachaItem(id: 'sr_dungeon_002', nameKr: '희귀한 Card B', rarity: GachaRarity.superRare),
+      GachaItem(id: 'sr_dungeon_003', nameKr: '희귀한 Card C', rarity: GachaRarity.superRare),
+      GachaItem(id: 'sr_dungeon_004', nameKr: '희귀한 Card D', rarity: GachaRarity.superRare),
       // R (35%)
-      const GachaItem(id: 'r_dungeon_001', nameKr: '우수한 Card A', rarity: GachaRarity.rare),
-      const GachaItem(id: 'r_dungeon_002', nameKr: '우수한 Card B', rarity: GachaRarity.rare),
-      const GachaItem(id: 'r_dungeon_003', nameKr: '우수한 Card C', rarity: GachaRarity.rare),
-      const GachaItem(id: 'r_dungeon_004', nameKr: '우수한 Card D', rarity: GachaRarity.rare),
-      const GachaItem(id: 'r_dungeon_005', nameKr: '우수한 Card E', rarity: GachaRarity.rare),
+      GachaItem(id: 'r_dungeon_001', nameKr: '우수한 Card A', rarity: GachaRarity.rare),
+      GachaItem(id: 'r_dungeon_002', nameKr: '우수한 Card B', rarity: GachaRarity.rare),
+      GachaItem(id: 'r_dungeon_003', nameKr: '우수한 Card C', rarity: GachaRarity.rare),
+      GachaItem(id: 'r_dungeon_004', nameKr: '우수한 Card D', rarity: GachaRarity.rare),
+      GachaItem(id: 'r_dungeon_005', nameKr: '우수한 Card E', rarity: GachaRarity.rare),
       // N (50%)
-      const GachaItem(id: 'n_dungeon_001', nameKr: '일반 Card A', rarity: GachaRarity.normal),
-      const GachaItem(id: 'n_dungeon_002', nameKr: '일반 Card B', rarity: GachaRarity.normal),
-      const GachaItem(id: 'n_dungeon_003', nameKr: '일반 Card C', rarity: GachaRarity.normal),
-      const GachaItem(id: 'n_dungeon_004', nameKr: '일반 Card D', rarity: GachaRarity.normal),
-      const GachaItem(id: 'n_dungeon_005', nameKr: '일반 Card E', rarity: GachaRarity.normal),
-      const GachaItem(id: 'n_dungeon_006', nameKr: '일반 Card F', rarity: GachaRarity.normal),
+      GachaItem(id: 'n_dungeon_001', nameKr: '일반 Card A', rarity: GachaRarity.normal),
+      GachaItem(id: 'n_dungeon_002', nameKr: '일반 Card B', rarity: GachaRarity.normal),
+      GachaItem(id: 'n_dungeon_003', nameKr: '일반 Card C', rarity: GachaRarity.normal),
+      GachaItem(id: 'n_dungeon_004', nameKr: '일반 Card D', rarity: GachaRarity.normal),
+      GachaItem(id: 'n_dungeon_005', nameKr: '일반 Card E', rarity: GachaRarity.normal),
+      GachaItem(id: 'n_dungeon_006', nameKr: '일반 Card F', rarity: GachaRarity.normal),
     ];
   }
 

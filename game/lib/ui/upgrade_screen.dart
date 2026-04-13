@@ -1,7 +1,9 @@
+import 'package:mg_common_game/core/ui/layout/mg_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import '../../game/logic/meta_progression_manager.dart';
-import 'package:mg_common_game/core/ui/theme/app_colors.dart';
+import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
+
 
 class UpgradeScreen extends StatelessWidget {
   const UpgradeScreen({super.key});
@@ -11,9 +13,9 @@ class UpgradeScreen extends StatelessWidget {
     final meta = GetIt.I<MetaProgressionManager>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFF0D0D1A),
       appBar: AppBar(
-        title: const Text('Soul Shop'),
+        title: const Text("Soul Shop"),
         backgroundColor: Colors.transparent,
       ),
       body: AnimatedBuilder(
@@ -22,7 +24,7 @@ class UpgradeScreen extends StatelessWidget {
           return Column(
             children: [
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(MGSpacing.lg),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -31,7 +33,7 @@ class UpgradeScreen extends StatelessWidget {
                       color: Colors.purpleAccent,
                       size: 32,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: MGSpacing.xs),
                     Text(
                       "${meta.soulStones}",
                       style: const TextStyle(
@@ -45,7 +47,7 @@ class UpgradeScreen extends StatelessWidget {
               ),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(MGSpacing.md),
                   children: [
                     _buildUpgradeTile(
                       meta,
@@ -101,18 +103,18 @@ class UpgradeScreen extends StatelessWidget {
       color: Colors.grey[900],
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(MGSpacing.md),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(MGSpacing.sm),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: color, size: 32),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: MGSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,7 +140,7 @@ class UpgradeScreen extends StatelessWidget {
                 backgroundColor: canAfford ? Colors.purple : Colors.grey[800],
                 foregroundColor: Colors.white,
               ),
-              child: Text("$cost Souls"),
+              child: Text("Souls"),
             ),
           ],
         ),

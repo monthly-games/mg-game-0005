@@ -5,7 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mg_common_game/systems/progression/upgrade_manager.dart';
 
 // ============================================================
-// ProceduralManager — MG-0005 Roguelike Dungeon
+// ProceduralManager -- MG-0005 Roguelike Dungeon
 // Handles procedural level generation, difficulty scaling,
 // and room variety for dungeon floors.
 // ============================================================
@@ -126,7 +126,7 @@ class ProceduralManager extends ChangeNotifier {
         type: RoomType.boss,
         difficulty: _scaledDifficulty(floor, isBoss: true),
         treasureMultiplier: 3.0,
-        displayName: 'Boss Chamber — Floor $floor',
+        displayName: 'Boss Chamber -- Floor $floor',
       ));
       _currentFloorRooms = rooms;
       notifyListeners();
@@ -190,21 +190,21 @@ class ProceduralManager extends ChangeNotifier {
   String _roomDisplayName(RoomType type, int floor) {
     switch (type) {
       case RoomType.combat:
-        return 'Dungeon Room — Floor $floor';
+        return 'Dungeon Room -- Floor $floor';
       case RoomType.treasure:
-        return 'Treasure Vault — Floor $floor';
+        return 'Treasure Vault -- Floor $floor';
       case RoomType.trap:
-        return 'Trap Corridor — Floor $floor';
+        return 'Trap Corridor -- Floor $floor';
       case RoomType.rest:
-        return 'Sanctuary — Floor $floor';
+        return 'Sanctuary -- Floor $floor';
       case RoomType.elite:
-        return 'Elite Guardian — Floor $floor';
+        return 'Elite Guardian -- Floor $floor';
       case RoomType.mystery:
-        return 'Mysterious Portal — Floor $floor';
+        return 'Mysterious Portal -- Floor $floor';
       case RoomType.shop:
         return 'Wandering Merchant';
       case RoomType.boss:
-        return 'Boss Chamber — Floor $floor';
+        return 'Boss Chamber -- Floor $floor';
     }
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mg_common_game/core/ui/mg_ui.dart';
 
 /// MG UI 기반 던전 로그라이크 HUD
@@ -139,6 +140,9 @@ class MGDungeonHud extends StatelessWidget {
 
           // 중앙 영역 확장 (게임 영역)
           const Expanded(child: SizedBox()),
+          // Spine 캐릭터
+          _buildSpineCharacter(),
+          const SizedBox(height: 50),
 
           // 적 정보 (있을 경우)
           if (enemyName != null && enemyHp != null)
@@ -261,7 +265,7 @@ class MGDungeonHud extends StatelessWidget {
         enemyMaxHp != null && enemyMaxHp! > 0 ? enemyHp! / enemyMaxHp! : 0.0;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(MGSpacing.sm),
       decoration: BoxDecoration(
         color: Colors.black54,
         borderRadius: BorderRadius.circular(12),
@@ -308,4 +312,34 @@ class MGDungeonHud extends StatelessWidget {
     }
     return number.toString();
   }
+
+
+  Widget _buildSpineCharacter() {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+      },
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          color: Colors.red.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.red.withAlpha(150), width: 2),
+        ),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.person, size: 24, color: Colors.white),
+            SizedBox(height: 2),
+            Text(
+              'Dungeon Hero',
+              style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 }

@@ -1,6 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages, unused_local_variable
 // ============================================================
-// Collection Screen — MG-0005 Roguelike Puzzle Dungeon
+// Collection Screen -- MG-0005 Roguelike Puzzle Dungeon
 // Genre: Puzzle · Collection System UI
 //
 // Firebase Analytics Events:

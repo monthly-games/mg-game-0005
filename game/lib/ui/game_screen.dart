@@ -1,12 +1,14 @@
+import 'package:mg_common_game/core/ui/layout/mg_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:mg_common_game/core/ui/theme/app_colors.dart';
+import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
 import 'package:mg_common_game/core/audio/audio_manager.dart';
 import '../game/logic/dungeon_manager.dart';
 import '../game/core/enemy.dart';
 import '../game/core/player.dart';
 import '../game/core/puzzle_board.dart';
 import 'hud/mg_dungeon_hud.dart';
+
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -93,7 +95,7 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFF0D0D1A),
       body: AnimatedBuilder(
         animation: _dungeonManager,
         builder: (context, child) {
@@ -129,16 +131,6 @@ class _GameScreenState extends State<GameScreen> {
                 onPause: () {
                   // TODO: Implement pause
                 },
-                onDailyHub: () => Navigator.of(context).pushNamed('/daily-hub'),
-                onGuildWar: () {
-Navigator.of(context).pushNamed('/guild-war');
-                },
-                onTournament: () {
-Navigator.of(context).pushNamed('/tournament');
-                },
-                onSeasonalEvent: () {
-Navigator.of(context).pushNamed('/seasonal-event');
-                },
               ),
             ],
           );
@@ -165,7 +157,7 @@ Navigator.of(context).pushNamed('/seasonal-event');
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.bug_report, size: 80, color: Colors.redAccent),
-          const SizedBox(height: 10),
+          const SizedBox(height: MGSpacing.sm),
           Text(
             enemy.name,
             style: const TextStyle(
@@ -178,7 +170,7 @@ Navigator.of(context).pushNamed('/seasonal-event');
             "HP: ${enemy.hp} / ${enemy.maxHp}",
             style: const TextStyle(color: Colors.redAccent, fontSize: 18),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: MGSpacing.xs),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
@@ -194,7 +186,7 @@ Navigator.of(context).pushNamed('/seasonal-event');
                   color: Colors.yellow,
                   size: 16,
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: MGSpacing.xxs),
                 Text(
                   "${enemy.intention}: ${enemy.intentionValue}",
                   style: const TextStyle(
@@ -214,12 +206,12 @@ Navigator.of(context).pushNamed('/seasonal-event');
     return Container(
       width: double.infinity,
       color: Colors.brown[900],
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(MGSpacing.md),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.store, size: 60, color: Colors.amber),
-          const SizedBox(height: 10),
+          const SizedBox(height: MGSpacing.sm),
           const Text(
             "Wandering Merchant",
             style: TextStyle(
@@ -233,7 +225,7 @@ Navigator.of(context).pushNamed('/seasonal-event');
             "Gold: ${_dungeonManager.gold}",
             style: const TextStyle(color: Colors.white, fontSize: 18),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: MGSpacing.lg),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -244,7 +236,7 @@ Navigator.of(context).pushNamed('/seasonal-event');
                 Icons.local_drink,
                 () => _dungeonManager.buyItem('heal', 50),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: MGSpacing.md),
               _buildShopItem(
                 "Sharpen",
                 "Atk +2",
@@ -254,7 +246,7 @@ Navigator.of(context).pushNamed('/seasonal-event');
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: MGSpacing.lg),
           ElevatedButton(
             onPressed: () => _dungeonManager.leaveShop(),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
@@ -277,7 +269,7 @@ Navigator.of(context).pushNamed('/seasonal-event');
       onTap: canBuy ? onTap : null,
       child: Container(
         width: 120,
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(MGSpacing.sm),
         decoration: BoxDecoration(
           color: canBuy ? Colors.black54 : Colors.white10,
           borderRadius: BorderRadius.circular(8),
@@ -286,7 +278,7 @@ Navigator.of(context).pushNamed('/seasonal-event');
         child: Column(
           children: [
             Icon(icon, color: canBuy ? Colors.white : Colors.grey, size: 32),
-            const SizedBox(height: 8),
+            const SizedBox(height: MGSpacing.xs),
             Text(
               name,
               style: TextStyle(
@@ -301,7 +293,7 @@ Navigator.of(context).pushNamed('/seasonal-event');
                 fontSize: 12,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: MGSpacing.xxs),
             Text(
               "$cost G",
               style: TextStyle(
@@ -410,8 +402,8 @@ Navigator.of(context).pushNamed('/seasonal-event');
   Widget _buildPuzzleArea() {
     final board = _dungeonManager.puzzleBoard;
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(4),
+      margin: const EdgeInsets.all(MGSpacing.md),
+      padding: const EdgeInsets.all(MGSpacing.xxs),
       decoration: BoxDecoration(
         color: Colors.black45,
         border: Border.all(color: Colors.white12),

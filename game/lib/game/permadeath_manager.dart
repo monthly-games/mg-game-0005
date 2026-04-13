@@ -3,7 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mg_common_game/systems/progression/upgrade_manager.dart';
 
 // ============================================================
-// PermadeathManager — MG-0005 Roguelike Dungeon
+// PermadeathManager -- MG-0005 Roguelike Dungeon
 // Meta-progression system: persists unlocks across deaths,
 // provides starting bonuses, and tracks best-run statistics.
 // ============================================================
@@ -156,7 +156,7 @@ class PermadeathManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Call when the player dies — handles meta-progression rewards.
+  /// Call when the player dies -- handles meta-progression rewards.
   /// Returns the number of Soul Stones earned this run.
   int onPlayerDeath() {
     _totalDeaths++;

@@ -1,3 +1,4 @@
+import 'package:mg_common_game/core/ui/layout/mg_spacing.dart';
 import 'package:flutter/material.dart';
 
 class TileWidget extends StatelessWidget {
@@ -13,7 +14,7 @@ class TileWidget extends StatelessWidget {
     return Container(
       width: 80,
       height: 80,
-      margin: const EdgeInsets.all(4),
+      margin: const EdgeInsets.all(MGSpacing.xxs),
       decoration: BoxDecoration(
         color: _getTileColor(value),
         borderRadius: BorderRadius.circular(8),

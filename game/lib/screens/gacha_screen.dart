@@ -1,7 +1,8 @@
 // ============================================================
-// Gacha Screen — MG-0005 Roguelike Puzzle Dungeon
+// Gacha Screen -- MG-0005 Roguelike Puzzle Dungeon
 // Genre: Roguelike Puzzle · Gacha System UI
-// ============================================================
+// ============================================================import 'package:mg_common_game/l10n/localization.dart';
+
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
@@ -170,7 +171,7 @@ class _GachaScreenState extends State<GachaScreen>
                 Padding(
                   padding: const EdgeInsets.all(MGSpacing.lg),
                   child: MGButton(
-                    label: 'OK',
+                    label: "Token Collection",
                     onPressed: _dismissResults,
                     size: MGButtonSize.large,
                     width: double.infinity,
@@ -512,7 +513,7 @@ class _GachaScreenState extends State<GachaScreen>
       children: [
         Expanded(
           child: GachaPullButton(
-            label: '1x Pull',
+            label: "Pull x1",
             cost: _kSinglePullCost,
             onPressed: _onSinglePull,
           ),
@@ -520,7 +521,7 @@ class _GachaScreenState extends State<GachaScreen>
         const SizedBox(width: MGSpacing.md),
         Expanded(
           child: GachaPullButton(
-            label: '10x Pull',
+            label: "Pull x10",
             cost: _kMultiPullCost,
             onPressed: _onMultiPull,
           ),
@@ -636,6 +637,7 @@ class _GachaScreenState extends State<GachaScreen>
       GachaRarity.superRare => MGColors.epic,
       GachaRarity.ultraRare => MGColors.legendary,
       GachaRarity.legendary => MGColors.mythic,
+      GachaRarity.superRare => MGColors.error,
     };
   }
 
