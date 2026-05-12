@@ -2,7 +2,6 @@ import 'package:mg_common_game/core/ui/layout/mg_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import '../../game/logic/meta_progression_manager.dart';
-import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
 
 
 class UpgradeScreen extends StatelessWidget {
@@ -96,7 +95,6 @@ class UpgradeScreen extends StatelessWidget {
     if (id == 'attack') level = meta.attackLevel;
     if (id == 'gold') level = meta.goldLevel;
 
-    int cost = meta.getUpgradeCost(id);
     bool canAfford = meta.canAfford(id);
 
     return Card(

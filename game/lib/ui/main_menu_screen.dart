@@ -1,7 +1,6 @@
 import 'package:mg_common_game/core/ui/layout/mg_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
 import 'game_screen.dart';
 import 'upgrade_screen.dart';
 

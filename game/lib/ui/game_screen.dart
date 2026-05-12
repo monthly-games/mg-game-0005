@@ -1,7 +1,6 @@
 import 'package:mg_common_game/core/ui/layout/mg_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
 import 'package:mg_common_game/core/audio/audio_manager.dart';
 import '../game/logic/dungeon_manager.dart';
 import '../game/core/enemy.dart';
