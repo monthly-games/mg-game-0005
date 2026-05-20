@@ -1,277 +1,144 @@
-import 'package:mg_common_game/systems/progression/achievement_manager.dart';
-
-import 'package:mg_common_game/mg_common_game.dart';
+import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:provider/provider.dart';
-import 'package:mg_common_game/core/economy/gold_manager.dart';
-import 'package:mg_common_game/l10n/extensions.dart';
-import 'game/logic/meta_progression_manager.dart';
-import 'game/procedural_manager.dart';
-import 'game/permadeath_manager.dart';
-import 'game/powerup_manager.dart';
-import 'ui/main_menu_screen.dart';
-import 'screens/daily_quest_screen.dart';
-import 'screens/achievement_screen.dart';
-import 'screens/collection_screen.dart';
+import 'package:game/game/level_design_config.dart';
+import 'package:game/game/wave_spawn_table.dart';
 
-// ============================================================
-// Roguelike Dungeon -- MG-0005
-// Genre: Puzzle (Roguelike subgenre) · Region: India
-// Phase 1 Week 4: Mechanic Enhancement
-//
-// Core loop: Explore → Match Puzzle → Defeat Enemies → Die → Upgrade → Repeat
-// Subsystems: Procedural generation, Permadeath meta-progression,
-//             In-run powerups, UpgradeManager integration
-// ============================================================
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await _initializeSystems();
-
-  // DailyQuest 시스템
-  if (!GetIt.I.isRegistered<DailyQuestManager>()) {
-    GetIt.I.registerSingleton(DailyQuestManager());
-  }
-  // Achievement 시스템
-  if (!GetIt.I.isRegistered<AchievementManager>()) {
-    GetIt.I.registerSingleton(AchievementManager());
-  }
-  // Collection 시스템
-  if (!GetIt.I.isRegistered<CollectionManager>()) {
-    GetIt.I.registerSingleton(CollectionManager());
-  }
-
-  // ── P3 Engine Systems (placeholder - not yet implemented) ─────────────────────────────────────
-  // GuildWarManager, TournamentManager, SeasonalContentManager - commented out until available
-
-  _registerCollections();
-  _registerAchievements();
-  _registerDailyQuests();
-
-  // ── Q7 DI Fix: Missing Systems ──────────────────────────
-  if (!GetIt.I.isRegistered<BattlePassManager>()) {
-    GetIt.I.registerSingleton<BattlePassManager>(BattlePassManager());
-  }
-  if (!GetIt.I.isRegistered<GachaManager>()) {
-    GetIt.I.registerSingleton<GachaManager>(GachaManager());
-  }
-
-  runApp(const RoguelikeDungeonApp());
+void main() {
+  runApp(const MyApp());
 }
 
-// ============================================================
-// System Initialization -- correct dependency order
-// ============================================================
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-/// Initialize all DI-registered systems in correct dependency order.
-/// mg_common_game systems first, then game-specific managers.
-Future<void> _initializeSystems() async {
-  final di = GetIt.I;
-
-  // ── mg_common_game core systems ──────────────────────────
-  if (!di.isRegistered<GoldManager>()) {
-    di.registerSingleton<GoldManager>(GoldManager());
-  }
-
-  if (!di.isRegistered<AudioManager>()) {
-    final audioManager = AudioManager();
-    di.registerSingleton<AudioManager>(audioManager);
-    await audioManager.initialize();
-  }
-
-  if (!di.isRegistered<UpgradeManager>()) {
-    final upgrades = UpgradeManager();
-    di.registerSingleton<UpgradeManager>(upgrades);
-    _registerUpgrades(upgrades);
-    await upgrades.loadUpgrades();
-  }
-
-  // ── Game-specific managers ───────────────────────────────
-  if (!di.isRegistered<MetaProgressionManager>()) {
-    di.registerSingleton<MetaProgressionManager>(MetaProgressionManager());
-  }
-
-  if (!di.isRegistered<ProceduralManager>()) {
-    final procedural = ProceduralManager();
-    procedural.syncUpgrades();
-    di.registerSingleton<ProceduralManager>(procedural);
-  }
-
-  if (!di.isRegistered<PermadeathManager>()) {
-    final permadeath = PermadeathManager();
-    permadeath.syncUpgrades();
-    di.registerSingleton<PermadeathManager>(permadeath);
-  }
-
-  if (!di.isRegistered<PowerupManager>()) {
-    final powerups = PowerupManager();
-    powerups.syncUpgrades();
-    di.registerSingleton<PowerupManager>(powerups);
-  }
-
-  // ── Retention Systems for DailyHub ────────────────────────
-  // LoginRewardsManager, StreakManager, DailyChallengeManager - commented out until available
-}
-
-// ============================================================
-// Upgrade Registration -- 8 roguelike-themed upgrades
-// Categories: procedural (3), permadeath (2), powerup (3)
-// ============================================================
-
-void _registerUpgrades(UpgradeManager manager) {
-  // ── Procedural upgrades (3) ──────────────────────────────
-
-  manager.registerUpgrade(Upgrade(
-    id: 'room_variety',
-    name: 'Cartographer\'s Eye',
-    description: 'Unlock additional room types in procedural generation.',
-    maxLevel: 5,
-    baseCost: 80,
-    costMultiplier: 1.5,
-    valuePerLevel: 1.0, // +1 room type per level
-  ));
-
-  manager.registerUpgrade(Upgrade(
-    id: 'difficulty_scaling',
-    name: 'Veteran\'s Wisdom',
-    description: 'Reduce enemy stat scaling per floor by 7% per level.',
-    maxLevel: 8,
-    baseCost: 120,
-    costMultiplier: 1.6,
-    valuePerLevel: 0.07, // -7% difficulty per level
-  ));
-
-  manager.registerUpgrade(Upgrade(
-    id: 'treasure_frequency',
-    name: 'Fortune Seeker',
-    description: 'Increase treasure room spawn chance by 5% per level.',
-    maxLevel: 8,
-    baseCost: 100,
-    costMultiplier: 1.5,
-    valuePerLevel: 0.05, // +5% treasure chance per level
-  ));
-
-  // ── Permadeath upgrades (2) ──────────────────────────────
-
-  manager.registerUpgrade(Upgrade(
-    id: 'starting_health',
-    name: 'Soul Fortification',
-    description: 'Gain +15 starting HP per level on each new run.',
-    maxLevel: 10,
-    baseCost: 150,
-    costMultiplier: 1.5,
-    valuePerLevel: 15.0, // +15 HP per level
-  ));
-
-  manager.registerUpgrade(Upgrade(
-    id: 'unlock_slots',
-    name: 'Perk Mastery',
-    description: 'Carry one additional persistent perk per level.',
-    maxLevel: 5,
-    baseCost: 200,
-    costMultiplier: 1.8,
-    valuePerLevel: 1.0, // +1 perk slot per level
-  ));
-
-  // ── Powerup upgrades (3) ────────────────────────────────
-
-  manager.registerUpgrade(Upgrade(
-    id: 'powerup_duration',
-    name: 'Lasting Enchantment',
-    description: 'Extend all powerup durations by 5 seconds per level.',
-    maxLevel: 8,
-    baseCost: 100,
-    costMultiplier: 1.4,
-    valuePerLevel: 5.0, // +5 seconds per level
-  ));
-
-  manager.registerUpgrade(Upgrade(
-    id: 'stack_limit',
-    name: 'Arcane Amplifier',
-    description: 'Allow one additional powerup stack per level.',
-    maxLevel: 4,
-    baseCost: 250,
-    costMultiplier: 2.0,
-    valuePerLevel: 1.0, // +1 max stack per level
-  ));
-
-  manager.registerUpgrade(Upgrade(
-    id: 'spawn_rate',
-    name: 'Loot Magnet',
-    description: 'Increase powerup drop chance by 5% per level.',
-    maxLevel: 8,
-    baseCost: 80,
-    costMultiplier: 1.4,
-    valuePerLevel: 0.05, // +5% drop chance per level
-  ));
-}
-
-// ============================================================
-// App Root -- MultiProvider wraps all upgrade-related state
-// ============================================================
-
-class RoguelikeDungeonApp extends StatelessWidget {
-  const RoguelikeDungeonApp({super.key});
+  static const gameId = 'MG-0005';
+  static const gameTitle = 'Roguelike Puzzle Dungeon';
+  static const coreFunLoop = kCoreFunLoop;
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(
-          value: GetIt.I<UpgradeManager>(),
+    return MaterialApp(
+      title: gameTitle,
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFF4511E),
+          brightness: Brightness.dark,
         ),
-        ChangeNotifierProvider.value(
-          value: GetIt.I<MetaProgressionManager>(),
-        ),
-        ChangeNotifierProvider.value(
-          value: GetIt.I<ProceduralManager>(),
-        ),
-        ChangeNotifierProvider.value(
-          value: GetIt.I<PermadeathManager>(),
-        ),
-        ChangeNotifierProvider.value(
-          value: GetIt.I<PowerupManager>(),
-        ),
-      ],
-      child: MaterialApp(
-        title: 'Roguelike Dungeon',
-        theme: _buildDungeonTheme(),
-        routes: {
-          '/daily-quest': (_) => const DailyQuestScreen(),
-          '/achievements': (_) => const AchievementScreen(),
-        },
-        home: const MainMenuScreen(),
-        debugShowCheckedModeBanner: false,
+        useMaterial3: true,
       ),
+      routes: {
+        '/game': (_) => const GameScreen(),
+        '/engine': (_) => const FrameLoopScreen(),
+        '/levels': (_) => const LevelRoadmapScreen(),
+        '/daily': (_) => const DailyHubScreen(),
+        '/retention': (_) => const RetentionHubScreen(),
+        '/guild-war': (_) => const GuildWarScreen(),
+        '/tournament': (_) => const TournamentScreen(),
+        '/seasonal-event': (_) => const SeasonalEventScreen(),
+      },
+      home: const MainMenuScreen(),
     );
   }
+}
 
-  /// Dungeon-themed dark mode with India-region orange accents
-  ThemeData _buildDungeonTheme() {
-    return ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: MGColors.indiaPrimary,
-        brightness: Brightness.dark,
-      ),
-      useMaterial3: true,
-      scaffoldBackgroundColor: const Color(0xFF0D0D1A),
-      appBarTheme: const AppBarTheme(
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-      ),
-      cardTheme: CardThemeData(
-        elevation: 2,
-        color: const Color(0xFF1A1A2E),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+class MainMenuScreen extends StatelessWidget {
+  const MainMenuScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Icon(Icons.videogame_asset_rounded, size: 72),
+                  const SizedBox(height: 24),
+                  Text(
+                    MyApp.gameId,
+                    key: const ValueKey('game-id'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    MyApp.gameTitle,
+                    key: const ValueKey('game-title'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Core Fun: ${MyApp.coreFunLoop}',
+                    key: const ValueKey('core-fun-loop'),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  FilledButton.icon(
+                    key: const ValueKey('start-game'),
+                    onPressed: () => Navigator.of(context).pushNamed('/game'),
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: const Text('Start Game'),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    key: const ValueKey('level-roadmap'),
+                    onPressed: () => Navigator.of(context).pushNamed('/levels'),
+                    icon: const Icon(Icons.map_rounded),
+                    label: const Text('Level Roadmap'),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: const [
+                      _MenuAction(
+                        route: '/engine',
+                        buttonKey: ValueKey('engine-loop'),
+                        icon: Icons.memory_rounded,
+                        label: 'Engine',
+                      ),
+                      _MenuAction(
+                        route: '/retention',
+                        buttonKey: ValueKey('rewards'),
+                        icon: Icons.card_giftcard_rounded,
+                        label: 'Rewards',
+                      ),
+                      _MenuAction(
+                        route: '/daily',
+                        buttonKey: ValueKey('daily-quests'),
+                        icon: Icons.today_rounded,
+                        label: 'Daily',
+                      ),
+                      _MenuAction(
+                        route: '/guild-war',
+                        buttonKey: ValueKey('guild-war'),
+                        icon: Icons.groups_rounded,
+                        label: 'Guild',
+                      ),
+                      _MenuAction(
+                        route: '/tournament',
+                        buttonKey: ValueKey('tournament'),
+                        icon: Icons.emoji_events_rounded,
+                        label: 'Tournament',
+                      ),
+                      _MenuAction(
+                        route: '/seasonal-event',
+                        buttonKey: ValueKey('seasonal-event'),
+                        icon: Icons.event_rounded,
+                        label: 'Event',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -279,114 +146,289 @@ class RoguelikeDungeonApp extends StatelessWidget {
   }
 }
 
+class _MenuAction extends StatelessWidget {
+  const _MenuAction({
+    required this.route,
+    required this.buttonKey,
+    required this.icon,
+    required this.label,
+  });
 
-void _registerDailyQuests() {
-  final dailyQuest = GetIt.I<DailyQuestManager>();
+  final String route;
+  final ValueKey<String> buttonKey;
+  final IconData icon;
+  final String label;
 
-  dailyQuest.registerQuest(DailyQuest(
-    id: 'dungeon_floors_10',
-    title: 'Floor Explorer',
-    description: 'Descend 10 dungeon floors',
-    targetValue: 10,
-    goldReward: 200,
-    xpReward: 50,
-  ));
-
-  dailyQuest.registerQuest(DailyQuest(
-    id: 'dungeon_bosses_3',
-    title: 'Boss Slayer',
-    description: 'Defeat 3 dungeon bosses',
-    targetValue: 3,
-    goldReward: 300,
-    xpReward: 75,
-  ));
-
-  dailyQuest.registerQuest(DailyQuest(
-    id: 'dungeon_survive_5',
-    title: 'Survivor',
-    description: 'Survive 5 dungeon runs',
-    targetValue: 5,
-    goldReward: 250,
-    xpReward: 60,
-  ));
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 132,
+      child: OutlinedButton.icon(
+        key: buttonKey,
+        onPressed: () => Navigator.of(context).pushNamed(route),
+        icon: Icon(icon),
+        label: Text(label),
+      ),
+    );
+  }
 }
 
+class GameScreen extends StatefulWidget {
+  const GameScreen({super.key});
 
-void _registerAchievements() {
-  final achievement = GetIt.I<AchievementManager>();
-
-  achievement.registerAchievement(Achievement(
-    id: 'gold_1000',
-    title: 'Gold Collector',
-    description: 'Collect 1000 total gold',
-    iconAsset: 'assets/achievements/gold_1000.png',
-  ));
-
-  achievement.registerAchievement(Achievement(
-    id: 'level_10',
-    title: 'Level 10',
-    description: 'Reach level 10',
-    iconAsset: 'assets/achievements/level_10.png',
-  ));
-
-  achievement.registerAchievement(Achievement(
-    id: 'play_100',
-    title: '100 Plays',
-    description: 'Play 100 games',
-    iconAsset: 'assets/achievements/play_100.png',
-  ));
+  @override
+  State<GameScreen> createState() => _GameScreenState();
 }
 
-void _registerCollections() {
-  final collection = GetIt.I<CollectionManager>();
+class _GameScreenState extends State<GameScreen> {
+  int levelIndex = 0;
+  int goldBank = 0;
+  int xpBank = 0;
 
-  // Characters collection
-  collection.registerCollection(Collection(
-    id: 'characters',
-    name: 'Heroes',
-    description: 'Collect all heroes',
-    items: [
-      const CollectionItem(
-        id: 'char_warrior',
-        name: 'Warrior',
-        description: 'Strong melee combat character',
-        rarity: CollectionRarity.common,
-      ),
-      const CollectionItem(
-        id: 'char_mage',
-        name: 'Mage',
-        description: 'Powerful magic attack character',
-        rarity: CollectionRarity.rare,
-      ),
-      const CollectionItem(
-        id: 'char_archer',
-        name: 'Archer',
-        description: 'Long-range precision attack character',
-        rarity: CollectionRarity.rare,
-      ),
-      const CollectionItem(
-        id: 'char_assassin',
-        name: 'Assassin',
-        description: 'Deadly stealth attack character',
-        rarity: CollectionRarity.epic,
-      ),
-      const CollectionItem(
-        id: 'char_healer',
-        name: 'Healer',
-        description: 'Support character that heals the team',
-        rarity: CollectionRarity.legendary,
-      ),
-    ],
-    completionReward: const CollectionReward(type: RewardType.gold, amount: 10000),
-    milestoneRewards: {
-      25: const CollectionReward(type: RewardType.gold, amount: 1000),
-      50: const CollectionReward(type: RewardType.gold, amount: 3000),
-      75: const CollectionReward(type: RewardType.gold, amount: 5000),
-    },
-  ));
+  GameLevelDesign get currentLevel => kLevelDesign[levelIndex];
 
-  // Item unlock callback (haptic feedback)
-  collection.onItemUnlocked = (collectionId, itemId) {
-    debugPrint('Collection item unlocked: $collectionId / $itemId');
-  };
+  void completeAction() {
+    setState(() {
+      goldBank += currentLevel.goldReward;
+      xpBank += currentLevel.xpReward;
+      if (levelIndex < kLevelDesign.length - 1) {
+        levelIndex += 1;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final level = currentLevel;
+    final spawn = kWaveSpawnTable[levelIndex];
+    return Scaffold(
+      appBar: AppBar(title: const Text('Game Ready')),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Primary loop: ${MyApp.coreFunLoop}',
+                  key: const ValueKey('primary-loop'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Level ${level.levelIndex} - ${level.stage}',
+                  key: const ValueKey('level-name'),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Objective: ${level.objective}',
+                  key: const ValueKey('level-objective'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Wave ${level.wave} | Difficulty ${level.difficulty.toStringAsFixed(2)}',
+                  key: const ValueKey('difficulty-label'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Pressure: ${spawn.enemyCount} enemies every '
+                  '${spawn.spawnCadenceSeconds.toStringAsFixed(2)}s',
+                  key: const ValueKey('pressure-label'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                LinearProgressIndicator(
+                  value: (level.levelIndex / kLevelDesign.length).clamp(0.0, 1.0),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Reward bank: $goldBank gold / $xpBank xp',
+                  key: const ValueKey('reward-bank'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                FilledButton.icon(
+                  key: const ValueKey('complete-action'),
+                  onPressed: completeAction,
+                  icon: const Icon(Icons.check_circle_rounded),
+                  label: const Text('Complete Action'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FrameLoopGame extends FlameGame {
+  double elapsedSeconds = 0;
+  int frameTicks = 0;
+
+  @override
+  void update(double dt) {
+    elapsedSeconds += dt;
+    frameTicks += 1;
+    super.update(dt);
+  }
+}
+
+class FrameLoopScreen extends StatelessWidget {
+  const FrameLoopScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Engine Loop')),
+      body: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              'GameWidget frame loop is active for runtime input, update, and render validation.',
+              key: ValueKey('engine-loop-status'),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(child: GameWidget(game: _FrameLoopGame())),
+        ],
+      ),
+    );
+  }
+}
+
+class LevelRoadmapScreen extends StatelessWidget {
+  const LevelRoadmapScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Level Roadmap')),
+      body: ListView.builder(
+        key: const ValueKey('level-list'),
+        padding: const EdgeInsets.all(16),
+        itemCount: kLevelDesign.length,
+        itemBuilder: (context, index) {
+          final level = kLevelDesign[index];
+          final spawn = kWaveSpawnTable[index];
+          return ListTile(
+            leading: CircleAvatar(child: Text('${level.levelIndex}')),
+            title: Text('Level ${level.levelIndex} - ${level.stage}'),
+            subtitle: Text(
+              'Wave ${level.wave} | difficulty ${level.difficulty.toStringAsFixed(2)} | '
+              '${spawn.enemyCount} enemies | reward ${level.goldReward}g/${level.xpReward}xp',
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class DailyHubScreen extends StatelessWidget {
+  const DailyHubScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Daily Quests',
+      detail: 'Short goals keep the fun loop moving.',
+      icon: Icons.today_rounded,
+    );
+  }
+}
+
+class RetentionHubScreen extends StatelessWidget {
+  const RetentionHubScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Rewards',
+      detail: 'Progression loop: return, claim, improve.',
+      icon: Icons.card_giftcard_rounded,
+    );
+  }
+}
+
+class GuildWarScreen extends StatelessWidget {
+  const GuildWarScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Guild War',
+      detail: 'Social competition is reachable from the main loop.',
+      icon: Icons.groups_rounded,
+    );
+  }
+}
+
+class TournamentScreen extends StatelessWidget {
+  const TournamentScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Tournament',
+      detail: 'Competitive goals are available for mastery.',
+      icon: Icons.emoji_events_rounded,
+    );
+  }
+}
+
+class SeasonalEventScreen extends StatelessWidget {
+  const SeasonalEventScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Seasonal Event',
+      detail: 'Timed content gives the loop a fresh reason to return.',
+      icon: Icons.event_rounded,
+    );
+  }
+}
+
+class _SimpleScreen extends StatelessWidget {
+  const _SimpleScreen({required this.title, required this.detail, required this.icon});
+
+  final String title;
+  final String detail;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 56),
+              const SizedBox(height: 16),
+              Text(
+                title,
+                key: const ValueKey('screen-title'),
+                style: Theme.of(context).textTheme.headlineSmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(detail, key: const ValueKey('screen-detail'), textAlign: TextAlign.center),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
