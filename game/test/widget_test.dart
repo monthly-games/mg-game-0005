@@ -2,17 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:game/main.dart';
 
 void main() {
-  testWidgets('2048 Merge smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const RoguelikeDungeonApp());
+  testWidgets('app boots to the main menu', (tester) async {
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
 
-    // 초기 타일 확인 (2개의 타일이 생성되어야 함)
-    expect(find.text('2'), findsWidgets);
-
-    // 점수 초기값 확인
-    expect(find.text('SCORE'), findsOneWidget);
-    expect(find.text('0'), findsOneWidget);
-
-    // 새 게임 버튼 확인
-    expect(find.text('NEW GAME'), findsOneWidget);
+    expect(find.textContaining('MG-'), findsWidgets);
+    expect(find.text('Start Game'), findsOneWidget);
   });
 }

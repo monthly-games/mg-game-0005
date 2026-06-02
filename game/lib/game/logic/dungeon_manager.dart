@@ -7,6 +7,9 @@ import '../core/puzzle_board.dart';
 import '../core/player.dart';
 import '../core/enemy.dart';
 import 'meta_progression_manager.dart';
+import 'rhythm_system.dart';
+import 'song_manager.dart';
+import 'competitive_manager.dart';
 
 enum GameEventType { damageTaken, healed, goldGained }
 
@@ -27,6 +30,9 @@ class DungeonManager extends ChangeNotifier {
   // Dependencies
   final MetaProgressionManager _metaManager = GetIt.I<MetaProgressionManager>();
   final AudioManager _audioManager = GetIt.I<AudioManager>();
+  final RhythmSystem _rhythmSystem = RhythmSystem();
+  final SongManager _songManager = SongManager();
+  final CompetitiveManager _competitiveManager = CompetitiveManager();
 
   Player get player => _player;
   Enemy? get currentEnemy => _currentEnemy;
@@ -39,6 +45,11 @@ class DungeonManager extends ChangeNotifier {
   int get gold => _gold;
   bool get isShopAvailable => _isShopAvailable;
 
+  // Rhythm System Access
+  RhythmSystem get rhythmSystem => _rhythmSystem;
+  SongManager get songManager => _songManager;
+  CompetitiveManager get competitiveManager => _competitiveManager;
+
   // Event System for UI Effects
   final _eventController = StreamController<GameEvent>.broadcast();
   Stream<GameEvent> get eventStream => _eventController.stream;
@@ -46,6 +57,7 @@ class DungeonManager extends ChangeNotifier {
   @override
   void dispose() {
     _eventController.close();
+    _rhythmSystem.dispose();
     super.dispose();
   }
 
@@ -64,6 +76,17 @@ class DungeonManager extends ChangeNotifier {
     _puzzleBoard.onMatch = _handleMatches;
     _currentFloor = 1;
     _gold = startGold;
+
+    // Initialize rhythm system with default BPM
+    _rhythmSystem.startRhythm(120);
+
+    // Initialize competitive player
+    _competitiveManager.initializePlayer('player_${DateTime.now().millisecondsSinceEpoch}', 'Player');
+
+    // Listen to rhythm events
+    _rhythmSystem.accuracyStream.listen(_handleRhythmAccuracy);
+    _rhythmSystem.feverStream.listen(_handleFeverMode);
+
     _startFloor();
   }
 
@@ -164,24 +187,36 @@ class DungeonManager extends ChangeNotifier {
 
   void _handleMatches(List<BlockType> matchedTypes) {
     _audioManager.playSfx('sfx_match.wav');
+
+    // Register rhythm input for timing accuracy
+    final accuracy = _rhythmSystem.registerInput();
+
     int damage = 0;
     int heal = 0;
     int shield = 0; // ignore: unused_local_variable
+
+    // Apply rhythm bonuses
+    final rhythmMultiplier = accuracy.scoreMultiplier;
+    final comboBonus = _rhythmSystem.isFeverMode ? 2.0 : 1.0;
 
     for (final type in matchedTypes) {
       switch (type) {
         case BlockType.sword:
           // Simple: 1 Sword Block = 2 Damage (Flat) for MVP
-          damage += 2;
+          // Apply rhythm accuracy multiplier
+          damage += (2 * rhythmMultiplier * comboBonus).toInt();
           break;
         case BlockType.potion:
-          heal += 5;
+          // Bonus healing for good rhythm
+          heal += (5 * rhythmMultiplier).toInt();
           break;
         case BlockType.shield:
           shield += 2;
           break;
         case BlockType.coin:
-          _gold += 5; // 5 Gold per block
+          // Bonus gold for rhythm accuracy
+          final goldReward = (5 * rhythmMultiplier * comboBonus).toInt();
+          _gold += goldReward;
           _audioManager.playSfx('sfx_gold.wav');
           break;
         case BlockType.mana:
@@ -273,18 +308,46 @@ class DungeonManager extends ChangeNotifier {
       _currentEnemy!.takeDamage(damage);
       if (_currentEnemy!.isDead) {
         _currentEnemy = null;
-        // Drop Gold
-        int goldDrop = 10 + (_currentFloor * 2);
+        // Drop Gold with rhythm bonuses
+        final baseGoldDrop = 10 + (_currentFloor * 2);
+        final comboMultiplier = _rhythmSystem.currentCombo > 10 ? 1.5 : 1.0;
+        final feverMultiplier = _rhythmSystem.isFeverMode ? 2.0 : 1.0;
+        final goldDrop = (baseGoldDrop * comboMultiplier * feverMultiplier).toInt();
         _gold += goldDrop;
         _eventController.add(
           GameEvent(GameEventType.goldGained, goldDrop, null),
         );
+
+        // Submit rhythm score to song manager and competitive system
+        if (_rhythmSystem.currentScore > 0) {
+          _songManager.submitScore('current_song', _rhythmSystem.currentScore);
+
+          // Update competitive match if active
+          if (_competitiveManager.currentMatch != null) {
+            _competitiveManager.submitMatchScore(_rhythmSystem);
+          }
+        }
 
         // Go to next floor
         _currentFloor++;
         _startFloor();
       }
       notifyListeners();
+    }
+  }
+
+  // Handle rhythm accuracy feedback
+  void _handleRhythmAccuracy(RhythmAccuracy accuracy) {
+    // Could add UI feedback here
+    // For now, the rhythm system handles score calculation
+  }
+
+  // Handle fever mode activation/deactivation
+  void _handleFeverMode(bool isActive) {
+    if (isActive) {
+      _audioManager.playSfx('sfx_fever_start.wav');
+    } else {
+      _audioManager.playSfx('sfx_fever_end.wav');
     }
   }
 }
